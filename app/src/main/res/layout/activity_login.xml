@@ -91,7 +91,7 @@
                 android:layout_height="wrap_content"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="16dp"
-                android:text="Credenciales por defecto: admin / admin123"
+                android:text="Credenciales por defecto: admin / 1234"
                 android:textColor="@color/text_secondary"
                 android:textSize="12sp" />
 

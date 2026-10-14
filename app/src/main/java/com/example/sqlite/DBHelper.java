@@ -207,4 +207,111 @@ public class DBHelper extends SQLiteOpenHelper {
         values.put("activo", 1);
         return db.insert("usuario", null, values);
     }
+
+    // Insertar nuevo rol
+    public long insertarRol(String nombreRol, String descripcion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("nombre_rol", nombreRol.toUpperCase());
+        values.put("descripcion", descripcion);
+        return db.insert("rol", null, values);
+    }
+
+    // Actualizar rol
+    public boolean actualizarRol(int idRol, String nombreRol, String descripcion) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("nombre_rol", nombreRol.toUpperCase());
+        values.put("descripcion", descripcion);
+        try {
+            int filas = db.update("rol", values, "id_rol = ?", new String[]{String.valueOf(idRol)});
+            return filas > 0;
+        } catch (Exception e) {
+            Log.e("DBHelper", "Error al actualizar rol: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Contar usuarios con un rol específico
+    public int contarUsuariosConRol(int idRol) {
+        SQLiteDatabase db = this.getReadableDatabase();
+        int count = 0;
+        try (Cursor cursor = db.rawQuery("SELECT COUNT(*) FROM usuario WHERE id_rol = ?", new String[]{String.valueOf(idRol)})) {
+            if (cursor.moveToFirst()) {
+                count = cursor.getInt(0);
+            }
+        } catch (Exception e) {
+            Log.e("DBHelper", "Error al contar usuarios con rol: " + e.getMessage());
+        }
+        return count;
+    }
+
+    // Eliminar rol
+    public boolean eliminarRol(int idRol) {
+        if (idRol == 1) {
+            return false; // No se puede eliminar el rol Administrador principal
+        }
+        if (contarUsuariosConRol(idRol) > 0) {
+            return false; // No se puede eliminar si hay usuarios asignados a este rol
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            int filas = db.delete("rol", "id_rol = ?", new String[]{String.valueOf(idRol)});
+            return filas > 0;
+        } catch (Exception e) {
+            Log.e("DBHelper", "Error al eliminar rol: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Eliminar rol y sus usuarios asociados en transacción
+    public boolean eliminarRolConUsuarios(int idRol) {
+        if (idRol == 1) {
+            return false; // No se puede eliminar el rol Administrador principal
+        }
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            db.beginTransaction();
+            db.delete("usuario", "id_rol = ?", new String[]{String.valueOf(idRol)});
+            int filas = db.delete("rol", "id_rol = ?", new String[]{String.valueOf(idRol)});
+            db.setTransactionSuccessful();
+            return filas > 0;
+        } catch (Exception e) {
+            Log.e("DBHelper", "Error al eliminar rol con usuarios: " + e.getMessage());
+            return false;
+        } finally {
+            db.endTransaction();
+        }
+    }
+
+    // Actualizar usuario
+    public boolean actualizarUsuario(int idUsuario, String username, String password, String nombreCompleto, int idRol) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+        values.put("username", username);
+        values.put("nombre_completo", nombreCompleto);
+        values.put("id_rol", idRol);
+        if (password != null && !password.trim().isEmpty()) {
+            values.put("password_hash", hashPassword(password.trim()));
+        }
+        try {
+            int filas = db.update("usuario", values, "id_usuario = ?", new String[]{String.valueOf(idUsuario)});
+            return filas > 0;
+        } catch (Exception e) {
+            Log.e("DBHelper", "Error al actualizar usuario: " + e.getMessage());
+            return false;
+        }
+    }
+
+    // Eliminar usuario
+    public boolean eliminarUsuario(int idUsuario) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        try {
+            int filas = db.delete("usuario", "id_usuario = ?", new String[]{String.valueOf(idUsuario)});
+            return filas > 0;
+        } catch (Exception e) {
+            Log.e("DBHelper", "Error al eliminar usuario: " + e.getMessage());
+            return false;
+        }
+    }
 }
