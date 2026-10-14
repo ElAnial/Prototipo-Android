@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/primary_dark">
+
+    <!-- Imagen de portada (cover) mostrada antes de iniciar la aplicación -->
+    <ImageView
+        android:id="@+id/ivSplashCover"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:contentDescription="Portada de la aplicación"
+        android:scaleType="centerCrop"
+        android:src="@drawable/splash_cover" />
+
+</FrameLayout>
